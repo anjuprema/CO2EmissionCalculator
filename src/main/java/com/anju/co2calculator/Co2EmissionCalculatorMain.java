@@ -1,5 +1,6 @@
 package com.anju.co2calculator;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -53,6 +54,8 @@ public class Co2EmissionCalculatorMain {
     		System.err.println("Error: "+ invalidArg.getMessage());
     	} catch(InvalidCityException invalidCity) {
     		System.err.println("Error: "+ invalidCity.getMessage());
+    	} catch(IOException unableToProcess) {
+    		System.err.println("Error: "+ unableToProcess.getMessage());
     	}catch(Exception e) {
     		System.err.println("Error: "+ e.getMessage());
     		e.printStackTrace();

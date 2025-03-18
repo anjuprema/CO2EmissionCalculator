@@ -37,14 +37,12 @@ public class OpenRouteService implements DistanceCalculationService {
     	 requestURL = new URL(baseURL + "geocode/search?api_key="+ apiKey +"&layers=locality&text="+ URLEncoder.encode(cityName, StandardCharsets.UTF_8));
          connection = createHttpConnection("GET", null);
 
-         try {
-            BufferedReader reader  = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+         try(BufferedReader reader  = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {            
             StringBuilder response = new StringBuilder();
             String line;
             while ((line = reader.readLine()) != null) {
                 response.append(line);
             }
-            reader.close();
 
             JSONObject jsonResponse = new JSONObject(response.toString());
             JSONArray features = jsonResponse.getJSONArray("features");
