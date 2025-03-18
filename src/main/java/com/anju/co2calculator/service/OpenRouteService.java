@@ -13,85 +13,31 @@ import java.util.HashMap;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import com.anju.co2calculator.exception.InvalidCityException;
 
-public class OpenRouteService implements DistanceCalcuationService {
+
+public class OpenRouteService implements DistanceCalculationService {
 	private static final String apiKey = System.getenv("ORS_TOKEN");
     private static final String baseURL = "https://api.openrouteservice.org/";
     private URL requestURL;
     private HttpURLConnection connection;
     
-    public double getDistanceBetweenTwoCities(String startLocation, String endLocation) {
-    	try {
-            HashMap<String, Double> cityCoordinates = getCoordinatesOfCity(startLocation);                       
-            Double lat1 = cityCoordinates.get("latitude");
-            Double lon1 = cityCoordinates.get("longitude");
-            
-            cityCoordinates = getCoordinatesOfCity(endLocation);
-            Double lat2 = cityCoordinates.get("latitude");;
-            Double lon2 = cityCoordinates.get("longitude");
-            
-            System.out.println(lat1+" , "+lon1);
-            System.out.println(lat2+ " , "+ lon2);
-            requestURL = new URL(baseURL + "v2/matrix/driving-car");
-            // JSON request body
-            JSONObject requestBody = new JSONObject();
-            requestBody.put("locations", new JSONArray(Arrays.asList(
-                    new JSONArray(Arrays.asList(lon1, lat1)),
-                    new JSONArray(Arrays.asList(lon2, lat2))
-            )));
-            requestBody.put("metrics", new JSONArray(Arrays.asList("distance", "duration")));
-            requestBody.put("units", "km");
-
-            connection = (HttpURLConnection) requestURL.openConnection();
-            // Set up the connection
-            connection.setRequestMethod("POST");
-            connection.setRequestProperty("Authorization", apiKey);
-            connection.setRequestProperty("Content-Type", "application/json");
-            connection.setDoOutput(true);
-
-            // Send request body
-            try (DataOutputStream writer = new DataOutputStream(connection.getOutputStream())) {
-                writer.writeBytes(requestBody.toString());
-                writer.flush();
-            }
-
-            // Read the response
-            try (BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
-                String inputLine;
-                StringBuilder response = new StringBuilder();
-                while ((inputLine = in.readLine()) != null) {
-                    response.append(inputLine);
-                }
-                
-                // Parse JSON response
-                JSONObject jsonResponse = new JSONObject(response.toString());
-                JSONArray distances = jsonResponse.getJSONArray("distances");
-                JSONArray durations = jsonResponse.getJSONArray("durations");
-
-                // Extract results
-                double distance = distances.getJSONArray(0).getDouble(1);
-                double duration = durations.getJSONArray(0).getDouble(1) / 60; // Convert seconds to minutes
-
-                // Output results
-                System.out.println("🛣 Distance: " + distance + " km");
-                System.out.println("⏳ Estimated Time: " + duration + " minutes");
-                return distance;
-            }
-
-        } catch (Exception e) {
-            System.err.println("⚠️ Error fetching distance/time: " + e.getMessage());
-        } finally {
-        	 connection.disconnect();
+    private HttpURLConnection createHttpConnection(String reqestMethod, String contentType) throws Exception {
+        connection = (HttpURLConnection) requestURL.openConnection();
+        connection.setRequestMethod(reqestMethod);        
+        if (contentType != null) {
+        	connection.setRequestProperty("Authorization", apiKey);
+            connection.setRequestProperty("Content-Type", contentType);
         }
-		return 0;
+        connection.setDoOutput(true);
+        return connection;
     }
+    
+    private HashMap<String, Double> getCoordinatesOfCity(String cityName) throws Exception{
+    	 requestURL = new URL(baseURL + "geocode/search?api_key="+ apiKey +"&layers=locality&text="+ URLEncoder.encode(cityName, StandardCharsets.UTF_8));
+         connection = createHttpConnection("GET", null);
 
-	private HashMap<String, Double> getCoordinatesOfCity(String cityName) {
-		try {
-            requestURL = new URL(baseURL + "geocode/search?api_key="+ apiKey +"&text="+ URLEncoder.encode(cityName, StandardCharsets.UTF_8));
-            connection = (HttpURLConnection) requestURL.openConnection();
-            connection.setRequestMethod("GET");
-
+         try {
             BufferedReader reader  = new BufferedReader(new InputStreamReader(connection.getInputStream()));
             StringBuilder response = new StringBuilder();
             String line;
@@ -100,7 +46,6 @@ public class OpenRouteService implements DistanceCalcuationService {
             }
             reader.close();
 
-            // Parse JSON response
             JSONObject jsonResponse = new JSONObject(response.toString());
             JSONArray features = jsonResponse.getJSONArray("features");
             HashMap<String, Double> responseCoordinates = new HashMap<>();
@@ -112,12 +57,67 @@ public class OpenRouteService implements DistanceCalcuationService {
             } 
             return responseCoordinates;
 
-        } catch (Exception e) {
-            e.printStackTrace();
         } finally {
        	 connection.disconnect();
-       }
-		return null;
+        }
 	}
+    
+    public double getDistanceBetweenTwoCities(String startLocation, String endLocation) throws Exception{
+        HashMap<String, Double> cityCoordinates = getCoordinatesOfCity(startLocation);                       
+        Double latitudeStartLocation = cityCoordinates.get("latitude");
+        Double longitudeStartLocation = cityCoordinates.get("longitude");
+        
+        if(latitudeStartLocation == null || longitudeStartLocation == null) {
+        	throw new InvalidCityException("Invalid start location");
+        }
+        
+        cityCoordinates = getCoordinatesOfCity(endLocation);
+        Double latitudeEndLocation = cityCoordinates.get("latitude");;
+        Double longitudeEndLocation = cityCoordinates.get("longitude");
+        
+        if(latitudeEndLocation == null || longitudeEndLocation == null) {
+        	throw new InvalidCityException("Invalid end location");
+        }
+        
+        System.out.println("["+ longitudeStartLocation +" , "+ latitudeStartLocation+"],["+ longitudeEndLocation + " , "+ latitudeEndLocation+"]");
+        requestURL = new URL(baseURL + "v2/matrix/driving-car");
+        // JSON request body
+        JSONObject requestBody = new JSONObject();
+        requestBody.put("locations", new JSONArray(Arrays.asList(
+                new JSONArray(Arrays.asList(longitudeStartLocation, latitudeStartLocation)),
+                new JSONArray(Arrays.asList(longitudeEndLocation, latitudeEndLocation))
+        )));
+        requestBody.put("metrics", new JSONArray(Arrays.asList("distance")));
+        requestBody.put("units", "km");
+        
+        //Send Request
+        connection = createHttpConnection("POST", "application/json");
+        connection.setDoOutput(true);
+        try (DataOutputStream writer = new DataOutputStream(connection.getOutputStream())) {
+            writer.writeBytes(requestBody.toString());
+            writer.flush();
+        }
 
+        //Read the response
+        try (BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
+            String inputLine;
+            StringBuilder response = new StringBuilder();
+            while ((inputLine = in.readLine()) != null) {
+                response.append(inputLine);
+            }
+            
+            // Parse JSON response
+            JSONObject jsonResponse = new JSONObject(response.toString());
+            System.out.println(jsonResponse);
+            JSONArray distances = jsonResponse.getJSONArray("distances").getJSONArray(0);
+            double distance = 0;
+            if(!distances.isNull(1)) {
+            	distance = distances.getDouble(1);
+            	System.out.println("-> Distance: " + distance + " km");               
+            }
+            return distance;
+        } finally {
+            connection.disconnect();
+        }
+    }
 }

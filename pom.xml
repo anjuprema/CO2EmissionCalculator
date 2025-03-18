@@ -84,7 +84,7 @@
 	              </descriptorRefs>
 	              <archive>
 	                <manifest>
-	                  <mainClass>com.anju.co2calculator.Main</mainClass> <!-- Main entry point -->
+	                  <mainClass>com.anju.co2calculator.Co2EmissionCalculatorMain</mainClass> <!-- Main entry point -->
 	                </manifest>
 	              </archive>
 	            </configuration>

@@ -1,0 +1,4 @@
+#!/bin/bash
+
+# Run the JAR file with all passed arguments
+java -jar "../target/co2-calculator-jar-with-dependencies.jar" "$@"
