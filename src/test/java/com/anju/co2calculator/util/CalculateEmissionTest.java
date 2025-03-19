@@ -12,10 +12,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
-import com.anju.co2calculator.config.EmissionForTransport;
+import com.anju.co2calculator.config.EmissionForTransportConfig;
 import com.anju.co2calculator.exception.InvalidArgumentException;
 import com.anju.co2calculator.exception.InvalidCityException;
-import com.anju.co2calculator.service.DistanceCalculationService;
+import com.anju.co2calculator.service.DistanceCalculationInterface;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -24,17 +24,17 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 public class CalculateEmissionTest {
 	@Mock
-    private DistanceCalculationService distanceCalculationService;
+    private DistanceCalculationInterface distanceCalculationService;
 	
 	@InjectMocks
-    private CalculateEmission calculateEmission;
+    private CalculateEmissionUtil calculateEmission;
 
     @Test
     void testCalculateCo2ForTripForValidData() throws Exception {
 
         when(distanceCalculationService.getDistanceBetweenTwoCities("New York", "Los Angeles")).thenReturn(4000.0);
-        try (MockedStatic<EmissionForTransport> mockedStaticTransport = mockStatic(EmissionForTransport.class)) {
-        	mockedStaticTransport.when(() -> EmissionForTransport.getAvgEmissionForTransport("diesel-car-medium")).thenReturn(171);
+        try (MockedStatic<EmissionForTransportConfig> mockedStaticTransport = mockStatic(EmissionForTransportConfig.class)) {
+        	mockedStaticTransport.when(() -> EmissionForTransportConfig.getAvgEmissionForTransport("diesel-car-medium")).thenReturn(171);
         	Double result = calculateEmission.calculateCo2ForTrip("New York", "Los Angeles", "diesel-car-medium");
             assertNotNull(result);
             assertEquals(684000.0, result);
@@ -53,8 +53,8 @@ public class CalculateEmissionTest {
     
     @Test
     void testCalculateCo2ForTripForInvalidTransportMethod() throws Exception {
-        try (MockedStatic<EmissionForTransport> mockedStaticTransport = mockStatic(EmissionForTransport.class)) {
-        	mockedStaticTransport.when(() -> EmissionForTransport.getAvgEmissionForTransport("invalid-transport")).thenReturn(-1);
+        try (MockedStatic<EmissionForTransportConfig> mockedStaticTransport = mockStatic(EmissionForTransportConfig.class)) {
+        	mockedStaticTransport.when(() -> EmissionForTransportConfig.getAvgEmissionForTransport("invalid-transport")).thenReturn(-1);
         	Exception exception = assertThrows(InvalidArgumentException.class, () -> 
 	            calculateEmission.calculateCo2ForTrip("New York", "Los Angeles", "invalid-transport")
 	        );	

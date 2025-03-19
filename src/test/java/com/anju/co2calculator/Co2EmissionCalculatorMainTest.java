@@ -1,7 +1,6 @@
 package com.anju.co2calculator;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayOutputStream;
@@ -9,8 +8,6 @@ import java.io.PrintStream;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import com.anju.co2calculator.exception.InvalidArgumentException;
 
 public class Co2EmissionCalculatorMainTest {
 	private final ByteArrayOutputStream outputStreamCaptor = new ByteArrayOutputStream();
