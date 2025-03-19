@@ -7,15 +7,16 @@ import java.util.Map;
 import com.anju.co2calculator.exception.InvalidArgumentException;
 import com.anju.co2calculator.exception.InvalidCityException;
 import com.anju.co2calculator.exception.MissingOrsTokenException;
-import com.anju.co2calculator.service.DistanceCalculationFactory;
+import com.anju.co2calculator.service.DistanceCalculationServiceFactory;
 import com.anju.co2calculator.service.DistanceCalculationInterface;
 import com.anju.co2calculator.service.OpenRouteService;
 import com.anju.co2calculator.util.CalculateEmissionUtil;
 
 public class Co2EmissionCalculatorMain {
-	private static final Map<String, String> arguments = new HashMap<String, String>();
+	//private static final Map<String, String> arguments = new HashMap<String, String>();
 
-	private static void parseArguments(String args[]) {
+	private static Map<String, String> parseArguments(String args[]) {
+		Map<String, String> arguments = new HashMap<String, String>();
 		/* Iterate through arguments and retrieve values */
 		for (int i = 0; i < args.length; i++) {
 			if (args[i].startsWith("--")) {
@@ -27,9 +28,10 @@ public class Co2EmissionCalculatorMain {
 				}
 			}
 		}
+		return arguments;
 	}
 
-	private static void validateArguments() {
+	private static void validateArguments(Map<String, String> arguments) {
 		/* Check if any arguments are provided */
 		if (arguments.isEmpty()) {
 			throw new InvalidArgumentException(
@@ -46,10 +48,11 @@ public class Co2EmissionCalculatorMain {
 
 	public static void main(String[] args) {
 		try {
-			parseArguments(args);
-			validateArguments();
+			Map<String, String> arguments = new HashMap<String, String>();
+			arguments = parseArguments(args);
+			validateArguments(arguments);
 
-			CalculateEmissionUtil calculateEmission = new CalculateEmissionUtil(DistanceCalculationFactory.distanceCalculationServiceProvider("openRouteService"));
+			CalculateEmissionUtil calculateEmission = new CalculateEmissionUtil(DistanceCalculationServiceFactory.distanceCalculationServiceProvider("openRouteService"));
 			Double co2EmissionForTripInGm = calculateEmission.calculateCo2ForTrip(arguments.get("--start"),
 					arguments.get("--end"), arguments.get("--transportation-method"));
 			if (co2EmissionForTripInGm != null) {
@@ -59,7 +62,6 @@ public class Co2EmissionCalculatorMain {
 
 		} catch (InvalidArgumentException | InvalidCityException | MissingOrsTokenException userException) {
 			System.err.println("Error: " + userException.getMessage());
-			System.out.println("Anju");
 		} catch (IOException ioExeception) {
 			System.err.println("Error: " + ioExeception.getMessage());
 		} catch (Exception e) {
