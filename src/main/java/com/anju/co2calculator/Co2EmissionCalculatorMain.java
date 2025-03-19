@@ -6,18 +6,15 @@ import java.util.Map;
 
 import com.anju.co2calculator.exception.InvalidArgumentException;
 import com.anju.co2calculator.exception.InvalidCityException;
+import com.anju.co2calculator.exception.MissingOrsTokenException;
 import com.anju.co2calculator.service.OpenRouteService;
 import com.anju.co2calculator.util.CalculateEmission;
 
 public class Co2EmissionCalculatorMain {
-    private static Map<String, String> arguments = new HashMap();
-	private static boolean validateArguments(String[] args) {
-		// Check if arguments are provided
-        if (args.length == 0) {
-            throw new InvalidArgumentException("No arguments provided. Please specify 'start' 'end' & 'transportation-method'");
-        }       
-
-        // Iterate through arguments
+    private static final Map<String, String> arguments = new HashMap<String, String>();
+    
+    private static void parseArguments(String args[]) {
+    	/* Iterate through arguments and retrieve values */
         for (int i = 0; i < args.length; i++) {
             if (args[i].startsWith("--")) {
                 if (args[i].contains("=")) {
@@ -28,35 +25,37 @@ public class Co2EmissionCalculatorMain {
                 }
             }
         }
+    }
+    
+	private static void validateArguments() {
+		/* Check if any arguments are provided */
+        if (arguments.isEmpty()) {
+            throw new InvalidArgumentException("No arguments provided. Ensure you provide --start, --end, and --transportation-method.");
+        }
         
-        // Validate input
+        /* Check if any required arguments are missing */
         if (arguments.get("--start") == null || arguments.get("--end") == null || arguments.get("--transportation-method") == null) {
-        	throw new InvalidArgumentException("Missing one or more required parameters.");
-        }        
-        return true;
+        	throw new InvalidArgumentException("Missing required parameters. Ensure you provide --start, --end, and --transportation-method.");
+        }
 	}
+	
     public static void main(String[] args) {
     	try {
-    		boolean isArgsValid = Co2EmissionCalculatorMain.validateArguments(args);    	
-            
-            if(isArgsValid) {
-            	System.out.println("-> Start: " + arguments.get("--start"));
-                System.out.println("-> End: " + arguments.get("--end"));
-                System.out.println("-> Transportation Method: " + arguments.get("--transportation-method"));
-                
-                CalculateEmission calculateEmission = new CalculateEmission(new OpenRouteService());
-                Double co2EmissionForTripInGm = calculateEmission.calculateCo2ForTrip(arguments.get("--start"), arguments.get("--end"), arguments.get("--transportation-method"));
-                if(co2EmissionForTripInGm != null) {
-                	System.out.println("Your trip caused "+ String.format("%.1f", co2EmissionForTripInGm / 1000) +" kg of CO2 equivalent");
-                }
+    		parseArguments(args);
+    		validateArguments();
+
+        	CalculateEmission calculateEmission = new CalculateEmission(new OpenRouteService());
+            Double co2EmissionForTripInGm = calculateEmission.calculateCo2ForTrip(arguments.get("--start"), arguments.get("--end"), arguments.get("--transportation-method"));
+            if(co2EmissionForTripInGm != null) {
+            	System.out.println("Your trip caused "+ String.format("%.1f", co2EmissionForTripInGm / 1000) +" kg of CO2 equivalent");
             }
-    	} catch(InvalidArgumentException invalidArg) {
-    		System.err.println("Error: "+ invalidArg.getMessage());
-    	} catch(InvalidCityException invalidCity) {
-    		System.err.println("Error: "+ invalidCity.getMessage());
-    	} catch(IOException unableToProcess) {
-    		System.err.println("Error: "+ unableToProcess.getMessage());
-    	}catch(Exception e) {
+
+    	} catch(InvalidArgumentException | InvalidCityException | MissingOrsTokenException userException) {
+    		System.err.println("Error: "+ userException.getMessage());
+    		System.out.println("Anju");
+    	} catch (IOException ioExeception) {
+    		System.err.println("Error: "+ ioExeception.getMessage());
+    	} catch(Exception e) {
     		System.err.println("Error: "+ e.getMessage());
     		e.printStackTrace();
     	}    	        

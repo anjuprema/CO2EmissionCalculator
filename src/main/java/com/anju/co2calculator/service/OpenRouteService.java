@@ -2,6 +2,7 @@ package com.anju.co2calculator.service;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -14,6 +15,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import com.anju.co2calculator.exception.InvalidCityException;
+import com.anju.co2calculator.exception.MissingOrsTokenException;
 
 
 public class OpenRouteService implements DistanceCalculationService {
@@ -22,9 +24,15 @@ public class OpenRouteService implements DistanceCalculationService {
     private URL requestURL;
     private HttpURLConnection connection;
     
-    private HttpURLConnection createHttpConnection(String reqestMethod, String contentType) throws Exception {
+    public OpenRouteService() {
+        if (apiKey == null || apiKey.trim().isEmpty()) {
+            throw new MissingOrsTokenException("Please set the ORS_TOKEN environment variable.");
+        }
+    }
+    
+    private HttpURLConnection createHttpConnection(String requestMethod, String contentType) throws Exception {
         connection = (HttpURLConnection) requestURL.openConnection();
-        connection.setRequestMethod(reqestMethod);        
+        connection.setRequestMethod(requestMethod);        
         if (contentType != null) {
         	connection.setRequestProperty("Authorization", apiKey);
             connection.setRequestProperty("Content-Type", contentType);
@@ -33,10 +41,16 @@ public class OpenRouteService implements DistanceCalculationService {
         return connection;
     }
     
-    private HashMap<String, Double> getCoordinatesOfCity(String cityName) throws Exception{
+    private HashMap<String, Double> getCoordinatesOfCity(String cityName) throws Exception {
     	 requestURL = new URL(baseURL + "geocode/search?api_key="+ apiKey +"&layers=locality&text="+ URLEncoder.encode(cityName, StandardCharsets.UTF_8));
          connection = createHttpConnection("GET", null);
-
+         
+         /* Check if data can be read successfully */
+         int responseCode = connection.getResponseCode();
+         if (responseCode != HttpURLConnection.HTTP_OK) {
+             throw new IOException("Failed to get coordinates: HTTP error code " + responseCode);
+         }
+         
          try(BufferedReader reader  = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {            
             StringBuilder response = new StringBuilder();
             String line;
@@ -60,7 +74,7 @@ public class OpenRouteService implements DistanceCalculationService {
         }
 	}
     
-    public double getDistanceBetweenTwoCities(String startLocation, String endLocation) throws Exception{
+    public double getDistanceBetweenTwoCities(String startLocation, String endLocation) throws Exception {
         HashMap<String, Double> cityCoordinates = getCoordinatesOfCity(startLocation);                       
         Double latitudeStartLocation = cityCoordinates.get("latitude");
         Double longitudeStartLocation = cityCoordinates.get("longitude");
@@ -95,7 +109,13 @@ public class OpenRouteService implements DistanceCalculationService {
             writer.writeBytes(requestBody.toString());
             writer.flush();
         }
-
+        
+        /* Check if data can be read successfully */
+        int responseCode = connection.getResponseCode();
+        if (responseCode != HttpURLConnection.HTTP_OK) {
+            throw new IOException("Failed to get coordinates: HTTP error code " + responseCode);
+        }
+        
         //Read the response
         try (BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
             String inputLine;
@@ -106,7 +126,6 @@ public class OpenRouteService implements DistanceCalculationService {
             
             // Parse JSON response
             JSONObject jsonResponse = new JSONObject(response.toString());
-            System.out.println(jsonResponse);
             JSONArray distances = jsonResponse.getJSONArray("distances").getJSONArray(0);
             double distance = 0;
             if(!distances.isNull(1)) {

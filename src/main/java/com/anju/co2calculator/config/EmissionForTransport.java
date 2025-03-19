@@ -3,7 +3,7 @@ package com.anju.co2calculator.config;
 import java.util.HashMap;
 
 public class EmissionForTransport {
-    private static final HashMap<String, Integer> averageEmissionPerKm = new HashMap<>();
+    private static final HashMap<String, Integer> averageEmissionPerKm = new HashMap<String, Integer>();
 
     static {
     	averageEmissionPerKm.put("diesel-car-small", 142);
