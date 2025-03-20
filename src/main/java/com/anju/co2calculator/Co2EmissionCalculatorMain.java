@@ -13,8 +13,6 @@ import com.anju.co2calculator.service.OpenRouteService;
 import com.anju.co2calculator.util.CalculateEmissionUtil;
 
 public class Co2EmissionCalculatorMain {
-	//private static final Map<String, String> arguments = new HashMap<String, String>();
-
 	private static Map<String, String> parseArguments(String args[]) {
 		Map<String, String> arguments = new HashMap<String, String>();
 		/* Iterate through arguments and retrieve values */
@@ -52,8 +50,8 @@ public class Co2EmissionCalculatorMain {
 			arguments = parseArguments(args);
 			validateArguments(arguments);
 
-			CalculateEmissionUtil calculateEmission = new CalculateEmissionUtil(DistanceCalculationServiceFactory.distanceCalculationServiceProvider("openRouteService"));
-			Double co2EmissionForTripInGm = calculateEmission.calculateCo2ForTrip(arguments.get("--start"),
+			CalculateEmissionUtil calculateEmissionUtil = new CalculateEmissionUtil(DistanceCalculationServiceFactory.distanceCalculationServiceProvider("openRouteService"));
+			Double co2EmissionForTripInGm = calculateEmissionUtil.calculateCo2ForTrip(arguments.get("--start"),
 					arguments.get("--end"), arguments.get("--transportation-method"));
 			if (co2EmissionForTripInGm != null) {
 				System.out.println("Your trip caused " + String.format("%.1f", co2EmissionForTripInGm / 1000)

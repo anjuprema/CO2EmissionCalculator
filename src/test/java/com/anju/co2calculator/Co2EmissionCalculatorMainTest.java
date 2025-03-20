@@ -1,7 +1,6 @@
 package com.anju.co2calculator;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayOutputStream;
@@ -14,7 +13,6 @@ import org.mockito.MockedConstruction;
 import org.mockito.MockedStatic;
 import static org.mockito.Mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
-import static org.mockito.Mockito.when;
 import com.anju.co2calculator.service.DistanceCalculationInterface;
 import com.anju.co2calculator.service.DistanceCalculationServiceFactory;
 import com.anju.co2calculator.util.CalculateEmissionUtil;
@@ -23,9 +21,6 @@ import com.anju.co2calculator.util.CalculateEmissionUtil;
 public class Co2EmissionCalculatorMainTest {
 	private final ByteArrayOutputStream outputStreamCaptor = new ByteArrayOutputStream();
 	private final ByteArrayOutputStream errorStreamCaptor = new ByteArrayOutputStream();
-
-	@Mock
-	private CalculateEmissionUtil calculateEmissionUtil;
 
 	@Mock
 	private DistanceCalculationInterface distanceCalculationService;
@@ -39,13 +34,13 @@ public class Co2EmissionCalculatorMainTest {
 	@Test
 	void testValidArgumentsSeperatedByEquals() throws Exception {
 		String[] args = { "--start=Hamburg", "--end=Berlin", "--transportation-method=diesel-car-medium" };
-		try (MockedStatic<DistanceCalculationServiceFactory> factoryMock = mockStatic(
+		try (MockedStatic<DistanceCalculationServiceFactory> openRouteServiceMock = mockStatic(
 				DistanceCalculationServiceFactory.class);
-				MockedConstruction<CalculateEmissionUtil> mockedConstructor = mockConstruction(
+				MockedConstruction<CalculateEmissionUtil> calculateEmissionUtilMock = mockConstruction(
 						CalculateEmissionUtil.class,
 						(mock, context) -> when(mock.calculateCo2ForTrip("Hamburg", "Berlin", "diesel-car-medium"))
 								.thenReturn(4000.0))) {
-			factoryMock.when(
+			openRouteServiceMock.when(
 					() -> DistanceCalculationServiceFactory.distanceCalculationServiceProvider("openRouteService"))
 					.thenReturn(distanceCalculationService);
 			assertDoesNotThrow(() -> Co2EmissionCalculatorMain.main(args));

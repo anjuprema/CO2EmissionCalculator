@@ -18,16 +18,24 @@ import com.anju.co2calculator.exception.InvalidCityException;
 import com.anju.co2calculator.exception.MissingOrsTokenException;
 
 public class OpenRouteService implements DistanceCalculationInterface {
-	private static final String apiKey = System.getenv("ORS_TOKEN");
+	private String apiKey;
 	private static final String baseURL = "https://api.openrouteservice.org/";
 	private URL requestURL;
 	private HttpURLConnection connection;
 
 	public OpenRouteService() {
+		apiKey = System.getenv("ORS_TOKEN");
 		if (apiKey == null || apiKey.trim().isEmpty()) {
 			throw new MissingOrsTokenException("Please set the ORS_TOKEN environment variable.");
 		}
 	}
+	
+	public OpenRouteService(String apiKey) {
+        if (apiKey == null || apiKey.trim().isEmpty()) {
+            throw new MissingOrsTokenException("Please set the ORS_TOKEN environment variable.");
+        }
+        this.apiKey = apiKey;
+    }
 
 	private HttpURLConnection createHttpConnection(String requestMethod, String contentType) throws Exception {
 		connection = (HttpURLConnection) requestURL.openConnection();
