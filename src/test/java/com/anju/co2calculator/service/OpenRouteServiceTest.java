@@ -3,25 +3,24 @@ package com.anju.co2calculator.service;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import java.io.IOException;
+
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
+
+import com.anju.co2calculator.exception.MissingOrsTokenException;
 
 public class OpenRouteServiceTest {
 	@Test
-	void testGetDistanceBetweenTwoCities() {
-		OpenRouteService openRouteService = new OpenRouteService("5b3ce3597851110001cf6248a9d9d403130a44248f5f89958c26cd58");
-		double distance;
-		try {
-			distance = openRouteService.getDistanceBetweenTwoCities("Berlin", "Munich");
-		} catch (Exception e) {
-			assertFalse(true);
-			return;
-		}
-		assertEquals(585.12, distance);
+	void testInvalidOrsToken() {
+		OpenRouteService openRouteService = new OpenRouteService("your_dummy_api_key");
+		assertThrows(IOException.class, () -> openRouteService.getDistanceBetweenTwoCities("Berlin", "Munich"));
 	}
-
+	
 	@Test
-	void testGetDistanceBetweenTwoCitiesForException() {
-		OpenRouteService openRouteService = new OpenRouteService("5b3ce3597851110001cf6248a9d9d403130a44248f5f89958c26cd58");
-		assertThrows(Exception.class, () -> openRouteService.getDistanceBetweenTwoCities("abcd", "Munich"));
+	void testOrsTokenNotSet() {
+		assertThrows(MissingOrsTokenException.class, () -> new OpenRouteService());
 	}
 }

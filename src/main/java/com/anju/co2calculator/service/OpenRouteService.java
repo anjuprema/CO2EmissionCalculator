@@ -9,7 +9,6 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.HashMap;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -17,6 +16,7 @@ import org.json.JSONObject;
 import com.anju.co2calculator.config.MessageProvider;
 import com.anju.co2calculator.exception.InvalidCityException;
 import com.anju.co2calculator.exception.MissingOrsTokenException;
+import com.anju.co2calculator.model.LocationCoordinates;
 
 /**
  * The {@code OpenRouteService} class provides functionality for calculating the
@@ -45,7 +45,6 @@ public class OpenRouteService implements DistanceCalculatorInterface {
 	// API key for authentication with OpenRouteService
 	private String apiKey;
 	private static final String baseURL = "https://api.openrouteservice.org/";
-	private URL requestURL;
 	private HttpURLConnection connection;
 	
 	/**
@@ -82,7 +81,8 @@ public class OpenRouteService implements DistanceCalculatorInterface {
      * @return a HttpURLConnection object.
      * @throws Exception if an error occurs during the connection setup.
      */
-	private HttpURLConnection createHttpConnection(String requestMethod, String contentType) throws Exception {
+	private HttpURLConnection createHttpConnection(String requestMethod, String contentType, String requestUrl) throws Exception {
+		URL requestURL = new URL(requestUrl);
 		connection = (HttpURLConnection) requestURL.openConnection();
 		connection.setRequestMethod(requestMethod);
 		if (contentType != null) {
@@ -97,13 +97,13 @@ public class OpenRouteService implements DistanceCalculatorInterface {
      * Retrieves the geographic coordinates (latitude and longitude) of a given city.
      * 
      * @param cityName the name of the city for which to get coordinates.
-     * @return a HashMap containing "latitude" and "longitude" of the city.
+     * @return a LocationCoordinates containing "latitude" and "longitude" of the city.
      * @throws Exception if there is an issue with the API request or the response.
      */
-	private HashMap<String, Double> getCoordinatesOfCity(String cityName) throws Exception {
-		requestURL = new URL(baseURL + "geocode/search?api_key=" + apiKey + "&layers=locality&text="
-				+ URLEncoder.encode(cityName, StandardCharsets.UTF_8));
-		connection = createHttpConnection("GET", null);
+	private LocationCoordinates getCoordinatesOfCity(String cityName) throws Exception {
+		String requestUrl = baseURL + "geocode/search?api_key=" + apiKey + "&layers=locality&text="
+				+ URLEncoder.encode(cityName, StandardCharsets.UTF_8);
+		connection = createHttpConnection("GET", null, requestUrl);
 
 		/* Check if data can be read successfully */
 		int responseCode = connection.getResponseCode();
@@ -120,14 +120,13 @@ public class OpenRouteService implements DistanceCalculatorInterface {
 
 			JSONObject jsonResponse = new JSONObject(response.toString());
 			JSONArray features = jsonResponse.getJSONArray("features");
-			HashMap<String, Double> responseCoordinates = new HashMap<>();
+
 			if (features.length() > 0) {
 				JSONObject geometry = features.getJSONObject(0).getJSONObject("geometry");
 				JSONArray coordinates = geometry.getJSONArray("coordinates");
-				responseCoordinates.put("longitude", coordinates.getDouble(0));
-				responseCoordinates.put("latitude", coordinates.getDouble(1));
+				return new LocationCoordinates(coordinates.getDouble(1), coordinates.getDouble(0));
 			}
-			return responseCoordinates;
+			return new LocationCoordinates(null, null);
 
 		} finally {
 			connection.disconnect();
@@ -143,34 +142,27 @@ public class OpenRouteService implements DistanceCalculatorInterface {
      * @throws Exception if there is an issue with the city names or the API request.
      */
 	public double getDistanceBetweenTwoCities(String startLocation, String endLocation) throws Exception {
-		HashMap<String, Double> cityCoordinates = getCoordinatesOfCity(startLocation);
-		Double latitudeStartLocation = cityCoordinates.get("latitude");
-		Double longitudeStartLocation = cityCoordinates.get("longitude");
-
-		if (latitudeStartLocation == null || longitudeStartLocation == null) {
+		LocationCoordinates cityStartCoordinates = getCoordinatesOfCity(startLocation);
+		if (cityStartCoordinates.getLatitude() == null || cityStartCoordinates.getLongitude() == null) {
 			throw new InvalidCityException(MessageProvider.INVALID_START_LOCATION);
 		}
 
-		cityCoordinates = getCoordinatesOfCity(endLocation);
-		Double latitudeEndLocation = cityCoordinates.get("latitude");
-		;
-		Double longitudeEndLocation = cityCoordinates.get("longitude");
-
-		if (latitudeEndLocation == null || longitudeEndLocation == null) {
+		LocationCoordinates cityEndCoordinates = getCoordinatesOfCity(endLocation);
+		if (cityEndCoordinates.getLatitude() == null || cityEndCoordinates.getLongitude() == null) {
 			throw new InvalidCityException(MessageProvider.INVALID_END_LOCATION);
 		}
 
-		requestURL = new URL(baseURL + "v2/matrix/driving-car");
+		String requestUrl = baseURL + "v2/matrix/driving-car";
 		// JSON request body
 		JSONObject requestBody = new JSONObject();
 		requestBody.put("locations",
-				new JSONArray(Arrays.asList(new JSONArray(Arrays.asList(longitudeStartLocation, latitudeStartLocation)),
-						new JSONArray(Arrays.asList(longitudeEndLocation, latitudeEndLocation)))));
+				new JSONArray(Arrays.asList(new JSONArray(Arrays.asList(cityStartCoordinates.getLongitude(), cityStartCoordinates.getLatitude())),
+						new JSONArray(Arrays.asList(cityEndCoordinates.getLongitude(), cityEndCoordinates.getLatitude())))));
 		requestBody.put("metrics", new JSONArray(Arrays.asList("distance")));
 		requestBody.put("units", "km");
 
 		// Send Request
-		connection = createHttpConnection("POST", "application/json");
+		connection = createHttpConnection("POST", "application/json", requestUrl);
 		connection.setDoOutput(true);
 		try (DataOutputStream writer = new DataOutputStream(connection.getOutputStream())) {
 			writer.writeBytes(requestBody.toString());
