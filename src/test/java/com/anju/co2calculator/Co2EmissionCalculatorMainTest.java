@@ -13,9 +13,8 @@ import org.mockito.MockedConstruction;
 import org.mockito.MockedStatic;
 import static org.mockito.Mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
-import com.anju.co2calculator.service.DistanceCalculationInterface;
-import com.anju.co2calculator.service.DistanceCalculationServiceFactory;
-import com.anju.co2calculator.util.CalculateEmissionUtil;
+import com.anju.co2calculator.service.DistanceCalculatorInterface;
+import com.anju.co2calculator.service.DistanceCalculatorServiceFactory;
 
 @ExtendWith(MockitoExtension.class)
 public class Co2EmissionCalculatorMainTest {
@@ -23,7 +22,7 @@ public class Co2EmissionCalculatorMainTest {
 	private final ByteArrayOutputStream errorStreamCaptor = new ByteArrayOutputStream();
 
 	@Mock
-	private DistanceCalculationInterface distanceCalculationService;
+	private DistanceCalculatorInterface distanceCalculationService;
 
 	@BeforeEach
 	void setUp() {
@@ -34,14 +33,14 @@ public class Co2EmissionCalculatorMainTest {
 	@Test
 	void testValidArgumentsSeperatedByEquals() throws Exception {
 		String[] args = { "--start=Hamburg", "--end=Berlin", "--transportation-method=diesel-car-medium" };
-		try (MockedStatic<DistanceCalculationServiceFactory> openRouteServiceMock = mockStatic(
-				DistanceCalculationServiceFactory.class);
-				MockedConstruction<CalculateEmissionUtil> calculateEmissionUtilMock = mockConstruction(
-						CalculateEmissionUtil.class,
+		try (MockedStatic<DistanceCalculatorServiceFactory> openRouteServiceMock = mockStatic(
+				DistanceCalculatorServiceFactory.class);
+				MockedConstruction<EmissionCalculator> calculateEmissionUtilMock = mockConstruction(
+						EmissionCalculator.class,
 						(mock, context) -> when(mock.calculateCo2ForTrip("Hamburg", "Berlin", "diesel-car-medium"))
 								.thenReturn(4000.0))) {
 			openRouteServiceMock.when(
-					() -> DistanceCalculationServiceFactory.distanceCalculationServiceProvider("openRouteService"))
+					() -> DistanceCalculatorServiceFactory.distanceCalculationServiceProvider("openRouteService"))
 					.thenReturn(distanceCalculationService);
 			assertDoesNotThrow(() -> Co2EmissionCalculatorMain.main(args));
 			String output = outputStreamCaptor.toString();

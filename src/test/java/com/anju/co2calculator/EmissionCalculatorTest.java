@@ -1,4 +1,4 @@
-package com.anju.co2calculator.util;
+package com.anju.co2calculator;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -10,20 +10,22 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import com.anju.co2calculator.EmissionCalculator;
 import com.anju.co2calculator.config.EmissionForTransportConfig;
 import com.anju.co2calculator.exception.InvalidArgumentException;
 import com.anju.co2calculator.exception.InvalidCityException;
-import com.anju.co2calculator.service.DistanceCalculationInterface;
+import com.anju.co2calculator.service.DistanceCalculatorInterface;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class CalculateEmissionUtilTest {
+public class EmissionCalculatorTest {
 	@Mock
-    private DistanceCalculationInterface distanceCalculationService;
+    private DistanceCalculatorInterface distanceCalculationService;
 	
 	@InjectMocks
-    private CalculateEmissionUtil calculateEmission;
+    private EmissionCalculator calculateEmission;
 
     @Test
     void testCalculateCo2ForTripForValidData() throws Exception {

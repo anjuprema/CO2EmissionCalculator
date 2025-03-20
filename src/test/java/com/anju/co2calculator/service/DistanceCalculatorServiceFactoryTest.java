@@ -15,16 +15,16 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class DistanceCalculationServiceFactoryTest {
+public class DistanceCalculatorServiceFactoryTest {
 	@Mock
 	private OpenRouteService openRouteServiceMock;
     
 	@Test
     void testValidServiceBasedOnKey() {
-		try (MockedStatic<DistanceCalculationServiceFactory> distanceCalculationFactoryMock = mockStatic(DistanceCalculationServiceFactory.class)) {
-			distanceCalculationFactoryMock.when(() -> DistanceCalculationServiceFactory.distanceCalculationServiceProvider("openRouteService"))
+		try (MockedStatic<DistanceCalculatorServiceFactory> distanceCalculationFactoryMock = mockStatic(DistanceCalculatorServiceFactory.class)) {
+			distanceCalculationFactoryMock.when(() -> DistanceCalculatorServiceFactory.distanceCalculationServiceProvider("openRouteService"))
                     .thenReturn(openRouteServiceMock);
-        	DistanceCalculationInterface openRouteService = DistanceCalculationServiceFactory.distanceCalculationServiceProvider("openRouteService");
+        	DistanceCalculatorInterface openRouteService = DistanceCalculatorServiceFactory.distanceCalculationServiceProvider("openRouteService");
         	assertNotNull(openRouteService);
         	assertInstanceOf(OpenRouteService.class, openRouteService);
 		}
@@ -33,7 +33,7 @@ public class DistanceCalculationServiceFactoryTest {
 	@Test
     void testInvalidServiceBasedOnKey() {
         assertThrows(InvalidArgumentException.class, () -> {
-            DistanceCalculationServiceFactory.distanceCalculationServiceProvider("invalidServiceKey");
+            DistanceCalculatorServiceFactory.distanceCalculationServiceProvider("invalidServiceKey");
         });
     }
 }
