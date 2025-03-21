@@ -60,10 +60,8 @@ OpenRouteService API Key → Get one at [https://openrouteservice.org/sign-up/](
 
 ## Running Tests
 To run the test suite:  
-```&nbsp;&nbsp;sh  
-&nbsp;&nbsp;&nbsp;&nbsp;mvn test  
-```  
-The project uses **JUnit 5, Mockito, and PowerMock** for testing.
+From the path of pom.xml file, execute the command > mvn test  
+The project uses **JUnit 5 & Mockito** for testing.
 
 ## Project Structure
 ```
