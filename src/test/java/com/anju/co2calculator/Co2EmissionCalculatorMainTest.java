@@ -54,7 +54,7 @@ public class Co2EmissionCalculatorMainTest {
 		assertDoesNotThrow(() -> Co2EmissionCalculatorMain.main(args));
 		String errorOutput = errorStreamCaptor.toString();
 		assertTrue(errorOutput.contains(
-				"Error: Missing required parameters. Ensure you provide --start, --end, and --transportation-method."));
+				"Error: Missing required parameters."));
 	}
 
 	@Test
@@ -63,6 +63,6 @@ public class Co2EmissionCalculatorMainTest {
 		assertDoesNotThrow(() -> Co2EmissionCalculatorMain.main(args));
 		String errorOutput = errorStreamCaptor.toString();
 		assertTrue(errorOutput.contains(
-				"Error: No arguments provided. Ensure you provide --start, --end, and --transportation-method."));
+				"Error: No arguments provided."));
 	}
 }

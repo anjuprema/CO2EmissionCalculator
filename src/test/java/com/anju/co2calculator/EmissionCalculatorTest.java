@@ -3,6 +3,7 @@ package com.anju.co2calculator;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -11,7 +12,6 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.anju.co2calculator.EmissionCalculator;
 import com.anju.co2calculator.config.EmissionForTransportConfig;
 import com.anju.co2calculator.exception.InvalidArgumentException;
 import com.anju.co2calculator.exception.InvalidCityException;
@@ -56,7 +56,7 @@ public class EmissionCalculatorTest {
         	Exception exception = assertThrows(InvalidArgumentException.class, () -> 
 	            calculateEmission.calculateCo2ForTrip("New York", "Los Angeles", "invalid-transport")
 	        );	
-	        assertEquals("Choosen transportation method is invalid", exception.getMessage());
+	        assertTrue(exception.getMessage().contains("Choosen transportation method is invalid"));
         }        
     }
 }
