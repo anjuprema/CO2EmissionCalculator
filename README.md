@@ -47,9 +47,7 @@ OpenRouteService API Key → Get one at [https://openrouteservice.org/sign-up/](
 	(Works on Windows PowerShell/Linux & Mac Bash)  
 	> cd [PROJECT_DIRECTORY]/scripts  
 	> ./co2-calculator --start Hamburg --end Berlin --transportation-method diesel-car-medium 	# Windows/Linux/MAC  
-&nbsp;&nbsp;&nbsp;&nbsp;Possible Values for start/end: Provide any city names like Berlin/Delhi/New York 
-&nbsp;&nbsp;&nbsp;&nbsp;Possible values for transportation-methods:  
-["diesel-car-small", "petrol-car-small", "plugin-hybrid-car-small", "electric-car-small", "diesel-car-medium", "petrol-car-medium", "plugin-hybrid-car-medium", "electric-car-medium", "diesel-car-large", "petrol-car-large", "plugin-hybrid-car-large", "electric-car-large", "bus-default", "train-default"]  
+&nbsp;&nbsp;&nbsp;&nbsp;'--start' & '--end' accepts city names. For possible transportation methods make use of './co2-calculator --help' 
 7. **Expected Result**  
 	> ./co2-calculator --start Hamburg --end Berlin --transportation-method diesel-car-medium  
 &nbsp;&nbsp;&nbsp;&nbsp;=> Your trip caused 49.2 kg of CO2-equivalent  
@@ -57,6 +55,8 @@ OpenRouteService API Key → Get one at [https://openrouteservice.org/sign-up/](
 &nbsp;&nbsp;&nbsp;&nbsp;=> Your trip caused 770.4 kg of CO2-equivalent.  
 	> ./co2-calculator --end "New York" --start "Los Angeles" --transportation-method=electric-car-large  
 &nbsp;&nbsp;&nbsp;&nbsp;=> Your trip caused 328.9 kg of CO2-equivalent.  
+	> ./co2-calculator --help  
+&nbsp;&nbsp;&nbsp;&nbsp;=> Gives details on script usage
 
 ## Running Tests
 To run the test suite:  
