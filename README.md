@@ -12,7 +12,7 @@ The CO₂ Emission Calculator is a Java-based application that calculates the CO
 Ensure you have the following installed:  
 Java 11 → All dependencies require Java 11. Verify installation using > `java -version`  
 Maven 3 → Verify installation using > `mvn -v`  
-OpenRouteService API Key → Get one at [https://openrouteservice.org/sign-up/](https://openrouteservice.org/sign-up/)  
+OpenRouteService API Key → You can get one at [https://openrouteservice.org/sign-up/](https://openrouteservice.org/sign-up/)  
 
 ## Installation
 # Setup
@@ -23,7 +23,7 @@ OpenRouteService API Key → Get one at [https://openrouteservice.org/sign-up/](
 2. **Set up your environment variable 'ORS_TOKEN' for OpenRouteService:**  
 	# In Windows  
 	&nbsp;&nbsp;&nbsp;&nbsp;- Set your api key as environment variable 			# To persist the value  
-	&nbsp;&nbsp;&nbsp;&nbsp;- Set ORS_TOKEN="your-api-key-here"      				# For Command Prompt (temporary in session)  
+	&nbsp;&nbsp;&nbsp;&nbsp;- Use command >$env:ORS_TOKEN = "your-api-key-here"      				# For Command Prompt (temporary in session)  
 	# In Linux/Mac  
 	&nbsp;&nbsp;&nbsp;&nbsp;- Add ORS_TOKEN to .bashrc/.cshrc		 			# To persist the value  
 	&nbsp;&nbsp;&nbsp;&nbsp;- export ORS_TOKEN=your-api-key-here   				# Execute in terminal  (temporary in session)
@@ -46,8 +46,8 @@ OpenRouteService API Key → Get one at [https://openrouteservice.org/sign-up/](
 6. **Run the application:**  
 	(Works on Windows PowerShell/Linux & Mac Bash)  
 	> cd [PROJECT_DIRECTORY]/scripts  
-	> ./co2-calculator --start Hamburg --end Berlin --transportation-method diesel-car-medium 	# Windows/Linux/MAC  
-&nbsp;&nbsp;&nbsp;&nbsp;'--start' & '--end' accepts city names. For possible transportation methods make use of './co2-calculator --help' 
+	> ./co2-calculator --start Hamburg --end Berlin --transportation-method diesel-car-medium    
+&nbsp;&nbsp;&nbsp;&nbsp;'--start' & '--end' accepts city names. To know about possible transportation methods make use of './co2-calculator --help' 
 7. **Expected Result**  
 	> ./co2-calculator --start Hamburg --end Berlin --transportation-method diesel-car-medium  
 &nbsp;&nbsp;&nbsp;&nbsp;=> Your trip caused 49.2 kg of CO2-equivalent  
@@ -70,6 +70,7 @@ co2-calculator/
 │   ├── main/java/com/anju/co2calculator/  	# Main application code
 │   │   ├── config/                      	# Configurations
 │   │   ├── exception/                      	# Custom exceptions
+│   │   ├── model/                      	# Model Classes
 │   │   ├── service/                       	# Business logic
 │   ├── test/java/com/anju/co2calculator/   	# Test cases
 │── scripts/                                 
@@ -96,7 +97,7 @@ co2-calculator/
 ## Enhancements
 - Support for Additional Transportation Methods
 - Localization & Multi-language Support
-- Support for multi city routes and streets
+- Support for multi city routes
   
   
   

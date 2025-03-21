@@ -29,7 +29,7 @@
 	<dependency>
 	    <groupId>org.junit.jupiter</groupId>
 	    <artifactId>junit-jupiter-engine</artifactId>
-	    <version>5.11.0</version>  <!-- Required if BOM is removed -->
+	    <version>5.11.0</version>
 	    <scope>test</scope>
 	</dependency>
 	
